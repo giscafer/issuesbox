@@ -21,8 +21,13 @@ function init() {
     const snippet = document.querySelectorAll('div.issues-filters')[0];
 
     staticalIssues().then(obj => {
-        console.log(obj)
         let htmlTmpl = buildHtml(obj);
+        const parent = snippet.parentNode;
+        parent.insertAdjacentHTML('afterbegin', htmlTmpl);
+    });
+
+    staticalIssues('BUG严重').then(obj => {
+        let htmlTmpl = buildHtml(obj, '严重BUG统计表');
         const parent = snippet.parentNode;
         parent.insertAdjacentHTML('afterbegin', htmlTmpl);
     });

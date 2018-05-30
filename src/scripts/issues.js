@@ -1,26 +1,43 @@
 import * as _ from 'lodash';
 
-let map = {},
-    totalPage = 4;
 
-function queryIssues(page, pageSize) {
-    // issues api
-    fetch(`https://git.1ziton.com/api/v4/projects/8/issues?scope=all&state=opened&labels=BUG&per_page=${pageSize}&page=${page}&private_token=khNsmX391h6fehX5W12N`, {
-        method: 'get',
-        "Private-Token": 'khNsmX391h6fehX5W12N'
-    }).then(reps => {
-        return reps.json()
-    }).then(json => {
-        dataHandler(page, json);
-        // console.log(json)
-    }).catch(err => {
-        console.log(err)
-        console.log('接口请求异常');
+
+let map = {},
+    pageSize = 60,
+    totalPage = 4;
+// issues api
+const getUrl = (page, pageSize, labels) => {
+    labels = labels || 'BUG';
+    return `https://git.1ziton.com/api/v4/projects/8/issues?scope=all&state=opened&labels=${labels}&per_page=${pageSize}&page=${page}&private_token=khNsmX391h6fehX5W12N`
+}
+
+const options = {
+    "method": 'get',
+    "mode": 'cors',
+    "Content-Type": 'application/json',
+    "Private-Token": 'khNsmX391h6fehX5W12N'
+};
+
+function queryIssues(page, pageSize, labels) {
+    let url = getUrl(page, pageSize, labels);
+    url = encodeURI(url);
+    return new Promise((resolve, reject) => {
+        fetch(url, options).then(response => {
+            if (response.headers.get('content-type').match(/application\/json/)) {
+                return response.json();
+            }
+            return [];
+        }).then(json => {
+            resolve(json);
+        }).catch(err => {
+            console.log('接口请求异常');
+            reject(err);
+        });
     });
 }
 
 
-function dataHandler(page, issues) {
+function dataHandler(issues) {
     // console.log(issues)
     let names = _.map(issues, item => {
         if (item.assignee && item.assignee.name && item.assignee.name !== 'undefined') {
@@ -41,26 +58,24 @@ function dataHandler(page, issues) {
 }
 
 
-/* function staticalIssues() {
-    map = {};
-    for (let i = 1; i < totalPage; i++) {
-        queryIssues(i, 60);
-    }
-
-    setTimeout(() => {
-        console.log('scm项目BUG统计：', map)
-    }, 3000)
-} */
-
-export function staticalIssues() {
-
+export function staticalIssues(labels) {
     return new Promise((resolve, reject) => {
         map = {};
+        let promiseArr = [];
         for (let i = 1; i < totalPage; i++) {
-            queryIssues(i, 60);
+            promiseArr.push(queryIssues(i, pageSize, labels));
         }
-        setTimeout(() => {
-            resolve(map);
-        }, 3000)
+        Promise.all(promiseArr).then(result => {
+            try {
+                for (let issues of result) {
+                    if (issues && issues.length) {
+                        dataHandler(issues);
+                    }
+                }
+                resolve(map);
+            } catch (e) {
+                reject(e);
+            }
+        });
     })
 }

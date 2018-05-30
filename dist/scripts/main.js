@@ -17122,25 +17122,40 @@ var _ = _interopRequireWildcard(_lodash);
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 var map = {},
+    pageSize = 60,
     totalPage = 4;
+// issues api
+var getUrl = function getUrl(page, pageSize, labels) {
+    labels = labels || 'BUG';
+    return 'https://git.1ziton.com/api/v4/projects/8/issues?scope=all&state=opened&labels=' + labels + '&per_page=' + pageSize + '&page=' + page + '&private_token=khNsmX391h6fehX5W12N';
+};
 
-function queryIssues(page, pageSize) {
-    // issues api
-    fetch('https://git.1ziton.com/api/v4/projects/8/issues?scope=all&state=opened&labels=BUG&per_page=' + pageSize + '&page=' + page + '&private_token=khNsmX391h6fehX5W12N', {
-        method: 'get',
-        "Private-Token": 'khNsmX391h6fehX5W12N'
-    }).then(function (reps) {
-        return reps.json();
-    }).then(function (json) {
-        dataHandler(page, json);
-        // console.log(json)
-    }).catch(function (err) {
-        console.log(err);
-        console.log('接口请求异常');
+var options = {
+    "method": 'get',
+    "mode": 'cors',
+    "Content-Type": 'application/json',
+    "Private-Token": 'khNsmX391h6fehX5W12N'
+};
+
+function queryIssues(page, pageSize, labels) {
+    var url = getUrl(page, pageSize, labels);
+    url = encodeURI(url);
+    return new Promise(function (resolve, reject) {
+        fetch(url, options).then(function (response) {
+            if (response.headers.get('content-type').match(/application\/json/)) {
+                return response.json();
+            }
+            return [];
+        }).then(function (json) {
+            resolve(json);
+        }).catch(function (err) {
+            console.log('接口请求异常');
+            reject(err);
+        });
     });
 }
 
-function dataHandler(page, issues) {
+function dataHandler(issues) {
     // console.log(issues)
     var names = _.map(issues, function (item) {
         if (item.assignee && item.assignee.name && item.assignee.name !== 'undefined') {
@@ -17185,27 +17200,47 @@ function dataHandler(page, issues) {
     delete map.undefined;
 }
 
-/* function staticalIssues() {
-    map = {};
-    for (let i = 1; i < totalPage; i++) {
-        queryIssues(i, 60);
-    }
-
-    setTimeout(() => {
-        console.log('scm项目BUG统计：', map)
-    }, 3000)
-} */
-
-function staticalIssues() {
-
+function staticalIssues(labels) {
     return new Promise(function (resolve, reject) {
         map = {};
+        var promiseArr = [];
         for (var i = 1; i < totalPage; i++) {
-            queryIssues(i, 60);
+            promiseArr.push(queryIssues(i, pageSize, labels));
         }
-        setTimeout(function () {
-            resolve(map);
-        }, 3000);
+        Promise.all(promiseArr).then(function (result) {
+            try {
+                var _iteratorNormalCompletion2 = true;
+                var _didIteratorError2 = false;
+                var _iteratorError2 = undefined;
+
+                try {
+                    for (var _iterator2 = result[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+                        var issues = _step2.value;
+
+                        if (issues && issues.length) {
+                            dataHandler(issues);
+                        }
+                    }
+                } catch (err) {
+                    _didIteratorError2 = true;
+                    _iteratorError2 = err;
+                } finally {
+                    try {
+                        if (!_iteratorNormalCompletion2 && _iterator2.return) {
+                            _iterator2.return();
+                        }
+                    } finally {
+                        if (_didIteratorError2) {
+                            throw _iteratorError2;
+                        }
+                    }
+                }
+
+                resolve(map);
+            } catch (e) {
+                reject(e);
+            }
+        });
     });
 }
 
@@ -17236,8 +17271,13 @@ function init() {
     var snippet = document.querySelectorAll('div.issues-filters')[0];
 
     (0, _issues.staticalIssues)().then(function (obj) {
-        console.log(obj);
         var htmlTmpl = (0, _util.buildHtml)(obj);
+        var parent = snippet.parentNode;
+        parent.insertAdjacentHTML('afterbegin', htmlTmpl);
+    });
+
+    (0, _issues.staticalIssues)('BUG严重').then(function (obj) {
+        var htmlTmpl = (0, _util.buildHtml)(obj, '严重BUG统计表');
         var parent = snippet.parentNode;
         parent.insertAdjacentHTML('afterbegin', htmlTmpl);
     });
@@ -17258,8 +17298,9 @@ exports.isIssuesPage = isIssuesPage;
 // import styles from '../data/styles';
 
 
-function buildHtml(obj) {
-    var _html = '\n    <table class="table table-bordered">\n        <thead>\n          <tr>\n          ' + iterator(1) + '\n          </tr>\n        </thead>\n        <tbody class="oauth-applications">\n            <tr>' + iterator() + '</tr>\n        </tbody>\n    </table>';
+function buildHtml(obj, title) {
+    title = title || 'BUG 统计表';
+    var _html = '\n    <h5>' + title + '</h5>\n    <table class="table table-bordered">\n        <thead>\n          <tr>\n          ' + iterator(1) + '\n          </tr>\n        </thead>\n        <tbody class="oauth-applications">\n            <tr>' + iterator() + '</tr>\n        </tbody>\n    </table>';
 
     function iterator(type) {
         var thStr = '',

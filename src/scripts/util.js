@@ -1,8 +1,10 @@
 // import styles from '../data/styles';
 
 
-export function buildHtml(obj) {
+export function buildHtml(obj, title) {
+    title = title || 'BUG 统计表';
     let _html = `
+    <h5>${title}</h5>
     <table class="table table-bordered">
         <thead>
           <tr>

@@ -3,7 +3,7 @@
     "name": "IssuesBox",
     "description": "一个gitlab的chrome扩展插件，统计每个项目中每个人员的bug总数",
     "homepage_url": "https://github.com/giscafer/issuesbox",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "author": "Nickbing Lao<giscafer@outlook.com>",
     "applications": {
         "gecko": {
