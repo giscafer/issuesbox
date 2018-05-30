@@ -1,0 +1,27 @@
+{
+    "manifest_version": 2,
+    "name": "IssuesBox",
+    "description": "B一个gitlab的chrome扩展插件，统计每个项目中每个人员的bug总数",
+    "homepage_url": "https://github.com/giscafer/issuesbox",
+    "version": "1.0.0",
+    "author": "Nickbing Lao<giscafer@outlook.com>",
+    "applications": {
+        "gecko": {
+            "id": "issuesbox@giscafer.com",
+            "strict_min_version": "45.0"
+        }
+    },
+    "icons": {
+        "16": "images/icon-16.png",
+        "48": "images/icon-48.png",
+        "128": "images/icon-128.png"
+    },
+    "content_scripts": [{
+        "css": ["styles/main.css"],
+        "js": ["scripts/main.js"],
+        "matches": [
+            "https://git.1ziton.com/*",
+            "https://gitlab.com/*"
+        ]
+    }]
+}

@@ -1,0 +1,37 @@
+.issuesbox {
+  position: relative;
+  overflow: visible; }
+  .issuesbox .issuesbox-btn {
+    box-shadow: none;
+    min-height: initial;
+    transition: opacity 0.3s ease-in-out;
+    opacity: 0;
+    position: absolute;
+    z-index: 1; }
+    .issuesbox .issuesbox-btn .issuesbox-btn-icon {
+      border-radius: 0;
+      margin-top: -3px;
+      position: relative;
+      top: 3px;
+      padding: 0;
+      vertical-align: initial;
+      min-height: initial; }
+    .issuesbox .issuesbox-btn:hover, .issuesbox .issuesbox-btn:focus {
+      box-shadow: none; }
+  .issuesbox:hover .issuesbox-btn {
+    opacity: 1; }
+
+.issuesbox.issuesbox-small .issuesbox-btn {
+  padding: 2px 6px;
+  right: 0;
+  top: 0; }
+
+.issuesbox.issuesbox-large .issuesbox-btn {
+  padding: 3px 6px;
+  right: 5px;
+  top: 5px; }
+
+.issuesbox.issuesbox-xlarge .issuesbox-btn {
+  padding: 3px 6px;
+  right: 30px;
+  top: 10px; }
